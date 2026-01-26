@@ -14,6 +14,7 @@ class Config:
     OUTPUT_DIR = BASE_DIR / "output"
     SKILLS_DIR = OUTPUT_DIR / "skills"
     CONTENT_DIR = OUTPUT_DIR / "content"
+    DOWNLOADS_DIR = BASE_DIR / "downloads"
     
     # API配置
     API_HOST = os.getenv("API_HOST", "0.0.0.0")
@@ -37,6 +38,7 @@ class Config:
         cls.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         cls.SKILLS_DIR.mkdir(parents=True, exist_ok=True)
         cls.CONTENT_DIR.mkdir(parents=True, exist_ok=True)
+        cls.DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
         (cls.BASE_DIR / "data").mkdir(parents=True, exist_ok=True)
 
 

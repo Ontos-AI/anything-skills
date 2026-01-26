@@ -83,6 +83,14 @@ cd anything-skills
 pip install -r requirements.txt
 ```
 
+### Environment Variables
+
+Copy the example file and fill in your own values:
+
+```bash
+cp .env.example .env
+```
+
 ### Usage
 
 #### CLI Mode
@@ -106,6 +114,20 @@ uvicorn src.api.main:app --reload
 
 # Open API docs
 open http://localhost:8000/docs
+```
+
+#### Web UI (Anything2Skills)
+
+```bash
+# Open the web UI
+open http://localhost:8000/anything2skills
+```
+
+#### Agent Arena (Task Comparison)
+
+```bash
+# Compare simple vs augmented agents
+open http://localhost:8000/agent-arena
 ```
 
 ---
