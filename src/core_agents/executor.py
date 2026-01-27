@@ -4,7 +4,7 @@ from __future__ import annotations
 import csv
 import importlib.util
 import re
-from datetime import date
+from datetime import date, timedelta
 from typing import List, Dict, Any
 
 from src.core.config import config
@@ -57,9 +57,10 @@ class ExecutorAgent:
 
         if "github" in sources or "github" in task.lower():
             try:
-                await emit(self.name, "action", "Fetching GitHub trending repositories...", {})
-                today = date.today().isoformat()
-                query = f"created:>={today} stars:>100"
+                await emit(self.name, "action", "Fetching GitHub trending repositories (last 30 days)...", {})
+                today = date.today()
+                start_date = (today - timedelta(days=30)).isoformat()
+                query = f"created:>={start_date} stars:>100"
                 repos = await tools.github_search(query, limit=20)
                 if not repos:
                     issues.append("No GitHub repositories returned.")
@@ -67,7 +68,7 @@ class ExecutorAgent:
                     config.ensure_dirs()
                     output_dir = config.OUTPUT_DIR / "runs"
                     output_dir.mkdir(parents=True, exist_ok=True)
-                    csv_path = output_dir / f"github_trending_{today.replace('-', '')}.csv"
+                    csv_path = output_dir / f"github_trending_{start_date.replace('-', '')}_to_{today.isoformat().replace('-', '')}.csv"
                     with csv_path.open("w", encoding="utf-8", newline="") as f:
                         writer = csv.DictWriter(
                             f,
@@ -100,7 +101,7 @@ class ExecutorAgent:
                     if importlib.util.find_spec("pandas") is not None:
                         import pandas as pd
 
-                        xlsx_path = output_dir / f"github_trending_{today.replace('-', '')}.xlsx"
+                        xlsx_path = output_dir / f"github_trending_{start_date.replace('-', '')}_to_{today.isoformat().replace('-', '')}.xlsx"
                         pd.DataFrame(repos).to_excel(xlsx_path, index=False)
                         outputs["xlsx"] = str(xlsx_path)
 

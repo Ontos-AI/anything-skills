@@ -172,6 +172,7 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 18px;
+  align-items: start;
 }
 
 .arena__panel {
@@ -179,7 +180,6 @@ body {
   border-radius: 20px;
   padding: 18px;
   border: 1px solid rgba(11, 11, 15, 0.08);
-  min-height: 260px;
   display: flex;
   flex-direction: column;
 }
@@ -196,6 +196,7 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
+  align-items: start;
 }
 
 .arena__log {
