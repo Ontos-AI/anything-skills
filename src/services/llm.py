@@ -68,3 +68,38 @@ def extract_skills_from_transcript(payload: Dict[str, str]) -> List[Dict[str, An
             }
         )
     return results
+
+
+def generate_test_cases(task: str, skill: Dict[str, Any]) -> List[Dict[str, Any]]:
+    client = _client()
+    response = client.chat.completions.create(
+        model=os.getenv("OPENAI_MODEL") or "gpt-4o-mini",
+        temperature=0.3,
+        response_format={"type": "json_object"},
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "Generate 2-3 test cases for the skill. "
+                    "Return JSON with key 'tests' (array). "
+                    "Each test must include: name, input, expected, environment, edge_cases (array)."
+                ),
+            },
+            {"role": "user", "content": json.dumps({"task": task, "skill": skill})},
+        ],
+    )
+    message = response.choices[0].message.content or "{}"
+    parsed = json.loads(message)
+    tests = parsed.get("tests") or []
+    results: List[Dict[str, Any]] = []
+    for test in tests:
+        results.append(
+            {
+                "name": str(test.get("name") or "Test"),
+                "input": str(test.get("input") or task),
+                "expected": str(test.get("expected") or "Expected outcome"),
+                "environment": str(test.get("environment") or ""),
+                "edge_cases": [str(item) for item in test.get("edge_cases", []) if item],
+            }
+        )
+    return results

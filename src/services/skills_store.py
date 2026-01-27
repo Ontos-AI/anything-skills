@@ -73,13 +73,12 @@ def save_skill(name: str, description: str, content: str, source: str = "generat
     target_dir.mkdir(parents=True, exist_ok=True)
     skill_file = target_dir / "SKILL.md"
 
+    # skill-creator规范：frontmatter只包含 name 和 description
     frontmatter = "\n".join(
         [
             "---",
             f"name: {name}",
             f"description: {description}",
-            f"source: {source}",
-            "version: 1.0.0",
             "---",
             "",
         ]

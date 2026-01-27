@@ -200,8 +200,7 @@ body {
 
 .arena__log {
   margin-top: 10px;
-  overflow-y: auto;
-  max-height: 360px;
+  overflow-y: visible;
   display: grid;
   gap: 10px;
 }

@@ -114,6 +114,38 @@ python test_bilibili.py "https://www.bilibili.com/video/BV1xxxxx" --full
 python test_bilibili.py "https://www.bilibili.com/video/BV1xxxxx" --full --model=small
 ```
 
+#### Agent Arena (Multi-Agent Execution)
+
+The augmented agent runs a real execution-first pipeline:
+
+1. Execute the task using available tools (GitHub, Bilibili, Web Search, etc.)
+2. Generate a skill from the execution outputs
+3. Generate test cases
+4. Validate and save the skill to `output/skills/`
+
+Open the UI:
+
+```bash
+open http://localhost:8000/agent-arena
+```
+
+**Data sources** (checkboxes):
+
+- **GitHub**: repository search + CSV/XLSX export for trending tasks
+- **Bilibili / YouTube**: video transcript extraction via Whisper
+- **Web Search (Bocha)**: online retrieval for up-to-date knowledge
+- **skills.sh**: existing skill templates as reference
+
+#### Web Search (Bocha)
+
+Configure Bocha Web Search via `.env`:
+
+```env
+BOCHA_API_KEY=your_key
+BOCHA_API_ENDPOINT=https://api.bocha.cn/v1/web-search
+```
+
+Note: Online search quality depends on external retrieval results; the system uses the top results as context, so relevance and freshness can vary.
 ---
 
 ## 📡 API Reference
