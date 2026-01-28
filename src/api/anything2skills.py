@@ -1,9 +1,10 @@
 """Anything2Skills API + UI routes."""
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
 
 from src.services.skills_store import list_local_skills, save_skill, install_skill_from_content, resolve_local_path
@@ -35,6 +36,25 @@ router = APIRouter()
 async def anything2skills_page(request: Request):
     templates = request.app.state.templates
     return templates.TemplateResponse("anything2skills.html", {"request": request})
+
+
+@router.get("/static/evaluation-report")
+async def serve_evaluation_report(path: str):
+    """Serve an evaluation HTML report file."""
+    file_path = Path(path)
+    # Security: only allow files within the skills directory
+    try:
+        skills_dir = config.SKILLS_DIR.resolve()
+        file_path = file_path.resolve()
+        if skills_dir not in file_path.parents and file_path.parent != skills_dir:
+            raise HTTPException(status_code=403, detail="Access denied")
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="Report not found")
+        if not file_path.suffix == ".html":
+            raise HTTPException(status_code=400, detail="Invalid file type")
+        return FileResponse(file_path, media_type="text/html")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/api/anything2skills/search")
@@ -106,7 +126,23 @@ async def anything2skills_generate(payload: GenerateRequest):
         raise HTTPException(status_code=500, detail=str(exc))
 
     saved = save_skill(spec["name"], spec["description"], spec["content"], source="generated")
-    return {"id": saved.id, "name": saved.name, "message": f"Generated skill: {saved.name}"}
+    
+    # Build evaluation response
+    eval_response = None
+    if saved.eval_score is not None:
+        eval_response = {
+            "score": saved.eval_score,
+            "badge": saved.eval_badge,
+            "report_path": str(saved.eval_report_path) if saved.eval_report_path else None,
+            "scores": saved.eval_scores,
+        }
+    
+    return {
+        "id": saved.id, 
+        "name": saved.name, 
+        "message": f"Generated skill: {saved.name}",
+        "evaluation": eval_response,
+    }
 
 
 @router.post("/api/anything2skills/install")

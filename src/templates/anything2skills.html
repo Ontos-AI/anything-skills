@@ -1,148 +1,341 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Anything2Skills</title>
-    <link rel="stylesheet" href="/static/anything2skills.css" />
-  </head>
-  <body>
-    <nav class="site-nav">
-      <div class="site-nav__inner">
-        <div class="site-nav__brand">Anything Skills</div>
-        <div class="site-nav__links">
-          <a href="/anything2skills">Anything2Skills</a>
-          <a href="/agent-arena">Agent Arena</a>
-          <a href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anything2Skills</title>
+  <link rel="stylesheet" href="/static/anything2skills.css" />
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <style>
+    /* Evaluation Modal Styles */
+    .eval-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .eval-modal.hidden {
+      display: none;
+    }
+
+    .eval-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(13, 15, 15, 0.4);
+      backdrop-filter: blur(4px);
+    }
+
+    .eval-modal-content {
+      position: relative;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      padding: 32px;
+      max-width: 520px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 80px rgba(13, 15, 15, 0.15);
+    }
+
+    .eval-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: rgba(13, 15, 15, 0.4);
+    }
+
+    .eval-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .eval-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.4rem;
+      margin: 0 0 12px;
+    }
+
+    .eval-score-display {
+      font-family: 'Fraunces', serif;
+      font-size: 3rem;
+      font-weight: 700;
+      color: #1d2a52;
+    }
+
+    .eval-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 8px;
+    }
+
+    .eval-badge.gold {
+      background: linear-gradient(135deg, #ffd700, #f4c430);
+      color: #0d0f0f;
+    }
+
+    .eval-badge.silver {
+      background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+      color: #0d0f0f;
+    }
+
+    .eval-badge.bronze {
+      background: linear-gradient(135deg, #f7a38f, #e8957e);
+      color: #fff;
+    }
+
+    .eval-badge.fail {
+      background: rgba(239, 68, 68, 0.15);
+      color: #dc2626;
+    }
+
+    .eval-radar {
+      width: 100%;
+      height: 220px;
+      margin-bottom: 20px;
+    }
+
+    .eval-scores-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .eval-score-item {
+      text-align: center;
+      padding: 12px 8px;
+      background: rgba(183, 240, 220, 0.2);
+      border-radius: 12px;
+    }
+
+    .eval-score-item .value {
+      font-family: 'Fraunces', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #1d2a52;
+    }
+
+    .eval-score-item .label {
+      font-size: 0.65rem;
+      color: rgba(13, 15, 15, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 2px;
+    }
+
+    .eval-issues {
+      margin-bottom: 20px;
+    }
+
+    .eval-issue {
+      padding: 10px 12px;
+      background: #f9f5ef;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      border-left: 3px solid #f7a38f;
+    }
+
+    .eval-issue-more {
+      font-size: 0.8rem;
+      color: rgba(13, 15, 15, 0.5);
+      text-align: center;
+      padding: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="site-nav">
+    <div class="site-nav__inner">
+      <div class="site-nav__brand">Anything Skills</div>
+      <div class="site-nav__links">
+        <a href="/anything2skills">Anything2Skills</a>
+        <a href="/agent-arena">Agent Arena</a>
+        <a href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+      </div>
+    </div>
+  </nav>
+  <main class="a2s-page">
+    <section class="a2s-hero">
+      <div>
+        <p class="a2s-chip">Anything2Skills</p>
+        <h1 class="a2s-title">Turn Any Signal Into a Runnable Skill.</h1>
+        <p class="a2s-subtitle">
+          Search local skills, skills.sh, and GitHub repositories. Generate skills from prompts and videos.
+        </p>
+      </div>
+      <div class="a2s-chip-row">
+        <span class="a2s-chip">Local</span>
+        <span class="a2s-chip">skills.sh</span>
+        <span class="a2s-chip">GitHub</span>
+        <span class="a2s-chip">LLM</span>
+      </div>
+    </section>
+
+    <section class="a2s-grid">
+      <div class="a2s-panel">
+        <h2 class="a2s-panel-title">Search & Match</h2>
+        <p class="a2s-message">Query across local skills, skills.sh, and GitHub.</p>
+        <div class="a2s-inline">
+          <input id="searchInput" class="a2s-input" placeholder="e.g. pdf, browser automation" />
+          <button id="searchBtn" class="a2s-button">Search</button>
+        </div>
+        <p id="searchMessage" class="a2s-message"></p>
+      </div>
+
+      <div class="a2s-panel">
+        <h2 class="a2s-panel-title">Prompt to Skill</h2>
+        <p class="a2s-message">Describe a workflow and generate a SKILL.md.</p>
+        <textarea id="promptInput" class="a2s-input a2s-textarea"
+          placeholder="Describe the skill, tools, and best practices..."></textarea>
+        <div class="a2s-inline">
+          <button id="generateBtn" class="a2s-button">Generate</button>
+          <button id="clearPromptBtn" class="a2s-button ghost">Clear</button>
+          <a id="viewReportBtn" class="a2s-button ghost" style="display:none;" target="_blank">View Report</a>
+        </div>
+        <p id="generateMessage" class="a2s-message"></p>
+      </div>
+
+      <div class="a2s-panel">
+        <h2 class="a2s-panel-title">Video to Skill</h2>
+        <p class="a2s-message">Use a YouTube URL or local file path.</p>
+        <input id="videoUrlInput" class="a2s-input" placeholder="https://www.youtube.com/watch?v=..." />
+        <input id="videoPathInput" class="a2s-input" placeholder="/path/to/downloads/your-video.mp4" />
+        <div class="a2s-inline">
+          <button id="extractBtn" class="a2s-button">Extract</button>
+          <button id="resetVideoBtn" class="a2s-button ghost">Reset</button>
+        </div>
+        <div class="a2s-card">
+          <div class="a2s-card-title">Status</div>
+          <div id="videoStatus" class="a2s-message">Idle</div>
+          <div id="videoError" class="a2s-message"></div>
         </div>
       </div>
-    </nav>
-    <main class="a2s-page">
-      <section class="a2s-hero">
-        <div>
-          <p class="a2s-chip">Anything2Skills</p>
-          <h1 class="a2s-title">Turn Any Signal Into a Runnable Skill.</h1>
-          <p class="a2s-subtitle">
-            Search local skills, skills.sh, and GitHub repositories. Generate skills from prompts and videos.
-          </p>
+    </section>
+
+    <section class="a2s-grid">
+      <div class="a2s-panel">
+        <h2 class="a2s-panel-title">Local Library</h2>
+        <div id="localResults" class="a2s-list"></div>
+      </div>
+      <div class="a2s-panel">
+        <h2 class="a2s-panel-title">skills.sh Marketplace</h2>
+        <div id="skillsShResults" class="a2s-list"></div>
+      </div>
+      <div class="a2s-panel">
+        <h2 class="a2s-panel-title">GitHub Sources</h2>
+        <div id="githubResults" class="a2s-list"></div>
+      </div>
+    </section>
+
+    <section class="a2s-panel">
+      <h2 class="a2s-panel-title">Transcript & Extracted Skills</h2>
+      <div class="a2s-list">
+        <div class="a2s-card">
+          <div class="a2s-card-title">Transcript</div>
+          <div id="transcriptBox" class="a2s-message">No transcript yet.</div>
         </div>
-        <div class="a2s-chip-row">
-          <span class="a2s-chip">Local</span>
-          <span class="a2s-chip">skills.sh</span>
-          <span class="a2s-chip">GitHub</span>
-          <span class="a2s-chip">LLM</span>
+        <div id="videoSkills" class="a2s-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Evaluation Modal -->
+  <div id="evalModal" class="eval-modal hidden">
+    <div class="eval-modal-backdrop"></div>
+    <div class="eval-modal-content">
+      <button class="eval-close" onclick="closeEvalModal()">&times;</button>
+      <div class="eval-header">
+        <h2 class="eval-title">Skill Evaluation</h2>
+        <div class="eval-score-display"><span id="evalScore">0.00</span></div>
+        <div id="evalBadge" class="eval-badge">SILVER</div>
+      </div>
+      <div id="evalRadar" class="eval-radar"></div>
+      <div class="eval-scores-grid">
+        <div class="eval-score-item">
+          <div class="value" id="scoreStructure">0</div>
+          <div class="label">Structure</div>
         </div>
-      </section>
-
-      <section class="a2s-grid">
-        <div class="a2s-panel">
-          <h2 class="a2s-panel-title">Search & Match</h2>
-          <p class="a2s-message">Query across local skills, skills.sh, and GitHub.</p>
-          <div class="a2s-inline">
-            <input id="searchInput" class="a2s-input" placeholder="e.g. pdf, browser automation" />
-            <button id="searchBtn" class="a2s-button">Search</button>
-          </div>
-          <p id="searchMessage" class="a2s-message"></p>
+        <div class="eval-score-item">
+          <div class="value" id="scoreTriggers">0</div>
+          <div class="label">Triggers</div>
         </div>
-
-        <div class="a2s-panel">
-          <h2 class="a2s-panel-title">Prompt to Skill</h2>
-          <p class="a2s-message">Describe a workflow and generate a SKILL.md.</p>
-          <textarea id="promptInput" class="a2s-input a2s-textarea" placeholder="Describe the skill, tools, and best practices..."></textarea>
-          <div class="a2s-inline">
-            <button id="generateBtn" class="a2s-button">Generate</button>
-            <button id="clearPromptBtn" class="a2s-button ghost">Clear</button>
-          </div>
-          <p id="generateMessage" class="a2s-message"></p>
+        <div class="eval-score-item">
+          <div class="value" id="scoreActionability">0</div>
+          <div class="label">Action</div>
         </div>
-
-        <div class="a2s-panel">
-          <h2 class="a2s-panel-title">Video to Skill</h2>
-          <p class="a2s-message">Use a YouTube URL or local file path.</p>
-          <input id="videoUrlInput" class="a2s-input" placeholder="https://www.youtube.com/watch?v=..." />
-          <input id="videoPathInput" class="a2s-input" placeholder="/path/to/downloads/your-video.mp4" />
-          <div class="a2s-inline">
-            <button id="extractBtn" class="a2s-button">Extract</button>
-            <button id="resetVideoBtn" class="a2s-button ghost">Reset</button>
-          </div>
-          <div class="a2s-card">
-            <div class="a2s-card-title">Status</div>
-            <div id="videoStatus" class="a2s-message">Idle</div>
-            <div id="videoError" class="a2s-message"></div>
-          </div>
+        <div class="eval-score-item">
+          <div class="value" id="scoreToolRefs">0</div>
+          <div class="label">Tools</div>
         </div>
-      </section>
-
-      <section class="a2s-grid">
-        <div class="a2s-panel">
-          <h2 class="a2s-panel-title">Local Library</h2>
-          <div id="localResults" class="a2s-list"></div>
+        <div class="eval-score-item">
+          <div class="value" id="scoreExamples">0</div>
+          <div class="label">Examples</div>
         </div>
-        <div class="a2s-panel">
-          <h2 class="a2s-panel-title">skills.sh Marketplace</h2>
-          <div id="skillsShResults" class="a2s-list"></div>
-        </div>
-        <div class="a2s-panel">
-          <h2 class="a2s-panel-title">GitHub Sources</h2>
-          <div id="githubResults" class="a2s-list"></div>
-        </div>
-      </section>
+      </div>
+      <div id="evalIssues" class="eval-issues"></div>
+      <button class="a2s-button" onclick="closeEvalModal()">Close</button>
+    </div>
+  </div>
 
-      <section class="a2s-panel">
-        <h2 class="a2s-panel-title">Transcript & Extracted Skills</h2>
-        <div class="a2s-list">
-          <div class="a2s-card">
-            <div class="a2s-card-title">Transcript</div>
-            <div id="transcriptBox" class="a2s-message">No transcript yet.</div>
-          </div>
-          <div id="videoSkills" class="a2s-list"></div>
-        </div>
-      </section>
-    </main>
-
-    <script>
-      document.querySelectorAll(".site-nav__links a").forEach((link) => {
-        if (window.location.pathname.startsWith(link.getAttribute("href"))) {
-          link.classList.add("is-active");
-        }
-      });
-
-      const searchBtn = document.getElementById("searchBtn");
-      const searchInput = document.getElementById("searchInput");
-      const searchMessage = document.getElementById("searchMessage");
-      const localResults = document.getElementById("localResults");
-      const skillsShResults = document.getElementById("skillsShResults");
-      const githubResults = document.getElementById("githubResults");
-
-      const promptInput = document.getElementById("promptInput");
-      const generateBtn = document.getElementById("generateBtn");
-      const clearPromptBtn = document.getElementById("clearPromptBtn");
-      const generateMessage = document.getElementById("generateMessage");
-
-      const videoUrlInput = document.getElementById("videoUrlInput");
-      const videoPathInput = document.getElementById("videoPathInput");
-      const extractBtn = document.getElementById("extractBtn");
-      const resetVideoBtn = document.getElementById("resetVideoBtn");
-      const videoStatus = document.getElementById("videoStatus");
-      const videoError = document.getElementById("videoError");
-      const transcriptBox = document.getElementById("transcriptBox");
-      const videoSkills = document.getElementById("videoSkills");
-
-      function setMessage(target, text) {
-        target.textContent = text || "";
+  <script>
+    document.querySelectorAll(".site-nav__links a").forEach((link) => {
+      if (window.location.pathname.startsWith(link.getAttribute("href"))) {
+        link.classList.add("is-active");
       }
+    });
 
-      function emptyResult(target, text) {
-        target.innerHTML = '<p class="a2s-message">' + text + "</p>";
+    const searchBtn = document.getElementById("searchBtn");
+    const searchInput = document.getElementById("searchInput");
+    const searchMessage = document.getElementById("searchMessage");
+    const localResults = document.getElementById("localResults");
+    const skillsShResults = document.getElementById("skillsShResults");
+    const githubResults = document.getElementById("githubResults");
+
+    const promptInput = document.getElementById("promptInput");
+    const generateBtn = document.getElementById("generateBtn");
+    const clearPromptBtn = document.getElementById("clearPromptBtn");
+    const viewReportBtn = document.getElementById("viewReportBtn");
+    const generateMessage = document.getElementById("generateMessage");
+
+    const videoUrlInput = document.getElementById("videoUrlInput");
+    const videoPathInput = document.getElementById("videoPathInput");
+    const extractBtn = document.getElementById("extractBtn");
+    const resetVideoBtn = document.getElementById("resetVideoBtn");
+    const videoStatus = document.getElementById("videoStatus");
+    const videoError = document.getElementById("videoError");
+    const transcriptBox = document.getElementById("transcriptBox");
+    const videoSkills = document.getElementById("videoSkills");
+
+    function setMessage(target, text) {
+      target.textContent = text || "";
+    }
+
+    function emptyResult(target, text) {
+      target.innerHTML = '<p class="a2s-message">' + text + "</p>";
+    }
+
+    function renderLocal(skills) {
+      if (!skills.length) {
+        return emptyResult(localResults, "No local matches yet.");
       }
-
-      function renderLocal(skills) {
-        if (!skills.length) {
-          return emptyResult(localResults, "No local matches yet.");
-        }
-        localResults.innerHTML = skills
-          .map(
-            (skill) => `
+      localResults.innerHTML = skills
+        .map(
+          (skill) => `
               <div class="a2s-card">
                 <div class="a2s-card-title">${skill.name}</div>
                 <div class="a2s-message">${skill.description}</div>
@@ -151,17 +344,17 @@
                 </div>
               </div>
             `
-          )
-          .join("");
-      }
+        )
+        .join("");
+    }
 
-      function renderSkillsSh(skills) {
-        if (!skills.length) {
-          return emptyResult(skillsShResults, "No marketplace matches yet.");
-        }
-        skillsShResults.innerHTML = skills
-          .map(
-            (skill) => `
+    function renderSkillsSh(skills) {
+      if (!skills.length) {
+        return emptyResult(skillsShResults, "No marketplace matches yet.");
+      }
+      skillsShResults.innerHTML = skills
+        .map(
+          (skill) => `
               <div class="a2s-card">
                 <div class="a2s-card-title">${skill.name}</div>
                 <div class="a2s-message">${skill.description}</div>
@@ -175,31 +368,31 @@
                 </div>
               </div>
             `
-          )
-          .join("");
+        )
+        .join("");
 
-        skillsShResults.querySelectorAll("button[data-install]").forEach((button) => {
-          button.addEventListener("click", async () => {
-            const payload = JSON.parse(button.getAttribute("data-install"));
-            setMessage(searchMessage, "Installing...");
-            const response = await fetch("/api/anything2skills/install", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ skill: payload }),
-            });
-            const data = await response.json();
-            setMessage(searchMessage, data.message || "Installed.");
+      skillsShResults.querySelectorAll("button[data-install]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const payload = JSON.parse(button.getAttribute("data-install"));
+          setMessage(searchMessage, "Installing...");
+          const response = await fetch("/api/anything2skills/install", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ skill: payload }),
           });
+          const data = await response.json();
+          setMessage(searchMessage, data.message || "Installed.");
         });
-      }
+      });
+    }
 
-      function renderGitHub(repos) {
-        if (!repos.length) {
-          return emptyResult(githubResults, "No GitHub matches yet.");
-        }
-        githubResults.innerHTML = repos
-          .map(
-            (repo) => `
+    function renderGitHub(repos) {
+      if (!repos.length) {
+        return emptyResult(githubResults, "No GitHub matches yet.");
+      }
+      githubResults.innerHTML = repos
+        .map(
+          (repo) => `
               <div class="a2s-card">
                 <div class="a2s-card-title">${repo.full_name}</div>
                 <div class="a2s-message">${repo.description || "No description."}</div>
@@ -213,95 +406,173 @@
                 </div>
               </div>
             `
-          )
-          .join("");
-      }
+        )
+        .join("");
+    }
 
-      searchBtn.addEventListener("click", async () => {
-        const query = searchInput.value.trim();
-        if (!query) return;
-        setMessage(searchMessage, "Searching...");
-        const response = await fetch(`/api/anything2skills/search?query=${encodeURIComponent(query)}`);
-        const data = await response.json();
-        renderLocal(data.local_skills || []);
-        renderSkillsSh(data.skills_sh || []);
-        renderGitHub(data.github_repos || []);
-        setMessage(
-          searchMessage,
-          `Found ${data.local_skills?.length || 0} local, ${data.skills_sh?.length || 0} skills.sh, ${data.github_repos?.length || 0} GitHub.`
-        );
+    searchBtn.addEventListener("click", async () => {
+      const query = searchInput.value.trim();
+      if (!query) return;
+      setMessage(searchMessage, "Searching...");
+      const response = await fetch(`/api/anything2skills/search?query=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      renderLocal(data.local_skills || []);
+      renderSkillsSh(data.skills_sh || []);
+      renderGitHub(data.github_repos || []);
+      setMessage(
+        searchMessage,
+        `Found ${data.local_skills?.length || 0} local, ${data.skills_sh?.length || 0} skills.sh, ${data.github_repos?.length || 0} GitHub.`
+      );
+    });
+
+    generateBtn.addEventListener("click", async () => {
+      const prompt = promptInput.value.trim();
+      if (!prompt) return;
+      setMessage(generateMessage, "Generating...");
+      viewReportBtn.style.display = "none";
+      const response = await fetch("/api/anything2skills/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
       });
+      const data = await response.json();
 
-      generateBtn.addEventListener("click", async () => {
-        const prompt = promptInput.value.trim();
-        if (!prompt) return;
-        setMessage(generateMessage, "Generating...");
-        const response = await fetch("/api/anything2skills/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt }),
-        });
-        const data = await response.json();
+      // Show View Report button if evaluation available
+      if (data.evaluation && data.evaluation.report_path) {
+        const badge = data.evaluation.badge || 'unknown';
+        const score = data.evaluation.score?.toFixed(2) || '0.00';
+        const emoji = { gold: '🥇', silver: '🥈', bronze: '🥉', fail: '❌' }[badge] || '';
+        setMessage(generateMessage, `${emoji} ${badge.toUpperCase()} (${score}) - ${data.message}`);
+        viewReportBtn.href = `/static/evaluation-report?path=${encodeURIComponent(data.evaluation.report_path)}`;
+        viewReportBtn.style.display = "inline-block";
+      } else {
         setMessage(generateMessage, data.message || "Generated.");
-      });
+      }
+    });
 
-      clearPromptBtn.addEventListener("click", () => {
-        promptInput.value = "";
-        setMessage(generateMessage, "");
-      });
+    clearPromptBtn.addEventListener("click", () => {
+      promptInput.value = "";
+      setMessage(generateMessage, "");
+    });
 
-      extractBtn.addEventListener("click", async () => {
-        const videoUrl = videoUrlInput.value.trim();
-        const localPath = videoPathInput.value.trim();
-        if (!videoUrl && !localPath) return;
-        videoStatus.textContent = "Processing...";
-        setMessage(videoError, "");
-        transcriptBox.textContent = "Processing...";
-        videoSkills.innerHTML = "";
-        const response = await fetch("/api/videos/extract", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ video_url: videoUrl || null, local_path: localPath || null, save: true }),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          videoStatus.textContent = "Failed";
-          setMessage(videoError, data.error || "Extraction failed.");
-          transcriptBox.textContent = "No transcript yet.";
-          return;
-        }
-        videoStatus.textContent = "Completed";
-        transcriptBox.textContent = data.video?.transcript || "No transcript yet.";
-        const skills = data.extracted_skills || [];
-        if (!skills.length) {
-          videoSkills.innerHTML = '<p class="a2s-message">No extracted skills yet.</p>';
-          return;
-        }
-        videoSkills.innerHTML = skills
-          .map(
-            (skill) => `
+    extractBtn.addEventListener("click", async () => {
+      const videoUrl = videoUrlInput.value.trim();
+      const localPath = videoPathInput.value.trim();
+      if (!videoUrl && !localPath) return;
+      videoStatus.textContent = "Processing...";
+      setMessage(videoError, "");
+      transcriptBox.textContent = "Processing...";
+      videoSkills.innerHTML = "";
+      const response = await fetch("/api/videos/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ video_url: videoUrl || null, local_path: localPath || null, save: true }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        videoStatus.textContent = "Failed";
+        setMessage(videoError, data.error || "Extraction failed.");
+        transcriptBox.textContent = "No transcript yet.";
+        return;
+      }
+      videoStatus.textContent = "Completed";
+      transcriptBox.textContent = data.video?.transcript || "No transcript yet.";
+      const skills = data.extracted_skills || [];
+      if (!skills.length) {
+        videoSkills.innerHTML = '<p class="a2s-message">No extracted skills yet.</p>';
+        return;
+      }
+      videoSkills.innerHTML = skills
+        .map(
+          (skill) => `
               <div class="a2s-card">
                 <div class="a2s-card-title">${skill.name}</div>
                 <div class="a2s-message">${skill.description}</div>
               </div>
             `
-          )
-          .join("");
+        )
+        .join("");
+    });
+
+    resetVideoBtn.addEventListener("click", () => {
+      videoUrlInput.value = "";
+      videoPathInput.value = "";
+      videoStatus.textContent = "Idle";
+      setMessage(videoError, "");
+      transcriptBox.textContent = "No transcript yet.";
+      videoSkills.innerHTML = "";
+    });
+
+    emptyResult(localResults, "No local matches yet.");
+    emptyResult(skillsShResults, "No marketplace matches yet.");
+    emptyResult(githubResults, "No GitHub matches yet.");
+    videoSkills.innerHTML = '<p class="a2s-message">No extracted skills yet.</p>';
+
+    // Evaluation Modal Functions
+    let evalChart = null;
+
+    function showEvalModal(skillName, evaluation) {
+      const modal = document.getElementById('evalModal');
+      const scoreEl = document.getElementById('evalScore');
+      const badgeEl = document.getElementById('evalBadge');
+
+      scoreEl.textContent = evaluation.score?.toFixed(2) || '0.00';
+      badgeEl.textContent = evaluation.badge?.toUpperCase() || 'UNKNOWN';
+      badgeEl.className = 'eval-badge ' + (evaluation.badge || 'fail');
+
+      // Update score items (if detailed scores are returned later)
+      document.getElementById('scoreStructure').textContent = (evaluation.scores?.structure || 0).toFixed(2);
+      document.getElementById('scoreTriggers').textContent = (evaluation.scores?.triggers || 0).toFixed(2);
+      document.getElementById('scoreActionability').textContent = (evaluation.scores?.actionability || 0).toFixed(2);
+      document.getElementById('scoreToolRefs').textContent = (evaluation.scores?.tool_refs || 0).toFixed(2);
+      document.getElementById('scoreExamples').textContent = (evaluation.scores?.examples || 0).toFixed(2);
+
+      // Initialize radar chart
+      const radarEl = document.getElementById('evalRadar');
+      if (!evalChart) {
+        evalChart = echarts.init(radarEl);
+      }
+
+      const scores = evaluation.scores || {};
+      evalChart.setOption({
+        backgroundColor: 'transparent',
+        radar: {
+          indicator: [
+            { name: 'Structure', max: 1 },
+            { name: 'Triggers', max: 1 },
+            { name: 'Action', max: 1 },
+            { name: 'Tools', max: 1 },
+            { name: 'Examples', max: 1 }
+          ],
+          shape: 'polygon',
+          splitNumber: 4,
+          radius: '65%',
+          axisName: { color: 'rgba(13,15,15,0.6)', fontSize: 10 },
+          splitArea: { areaStyle: { color: ['rgba(183,240,220,0.05)', 'rgba(183,240,220,0.1)', 'rgba(183,240,220,0.15)', 'rgba(183,240,220,0.2)'] } },
+          axisLine: { lineStyle: { color: 'rgba(13,15,15,0.08)' } },
+          splitLine: { lineStyle: { color: 'rgba(13,15,15,0.08)' } }
+        },
+        series: [{
+          type: 'radar',
+          data: [{
+            value: [scores.structure || 0, scores.triggers || 0, scores.actionability || 0, scores.tool_refs || 0, scores.examples || 0],
+            areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(29,42,82,0.4)' }, { offset: 1, color: 'rgba(183,240,220,0.3)' }] } },
+            lineStyle: { color: '#1d2a52', width: 2 },
+            itemStyle: { color: '#1d2a52' }
+          }]
+        }]
       });
 
-      resetVideoBtn.addEventListener("click", () => {
-        videoUrlInput.value = "";
-        videoPathInput.value = "";
-        videoStatus.textContent = "Idle";
-        setMessage(videoError, "");
-        transcriptBox.textContent = "No transcript yet.";
-        videoSkills.innerHTML = "";
-      });
+      modal.classList.remove('hidden');
+    }
 
-      emptyResult(localResults, "No local matches yet.");
-      emptyResult(skillsShResults, "No marketplace matches yet.");
-      emptyResult(githubResults, "No GitHub matches yet.");
-      videoSkills.innerHTML = '<p class="a2s-message">No extracted skills yet.</p>';
-    </script>
-  </body>
+    function closeEvalModal() {
+      document.getElementById('evalModal').classList.add('hidden');
+    }
+
+    // Close modal on backdrop click
+    document.querySelector('.eval-modal-backdrop')?.addEventListener('click', closeEvalModal);
+  </script>
+</body>
+
 </html>

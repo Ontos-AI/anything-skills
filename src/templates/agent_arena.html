@@ -1,189 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Agent Arena</title>
-    <link rel="stylesheet" href="/static/agent_arena.css" />
-  </head>
-  <body>
-    <nav class="site-nav">
-      <div class="site-nav__inner">
-        <div class="site-nav__brand">Anything Skills</div>
-        <div class="site-nav__links">
-          <a href="/anything2skills">Anything2Skills</a>
-          <a href="/agent-arena">Agent Arena</a>
-          <a href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Arena</title>
+  <link rel="stylesheet" href="/static/agent_arena.css" />
+</head>
+
+<body>
+  <nav class="site-nav">
+    <div class="site-nav__inner">
+      <div class="site-nav__brand">Anything Skills</div>
+      <div class="site-nav__links">
+        <a href="/anything2skills">Anything2Skills</a>
+        <a href="/agent-arena">Agent Arena</a>
+        <a href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+      </div>
+    </div>
+  </nav>
+  <main class="arena">
+    <header class="arena__hero">
+      <div>
+        <p class="arena__eyebrow">Task Arena</p>
+        <h1>Run the same task through two agents and compare output.</h1>
+        <p class="arena__subtitle">
+          Choose sources, describe a task, and stream each agent's thought process in real time.
+        </p>
+      </div>
+      <div class="arena__tags">
+        <span>YouTube</span>
+        <span>GitHub</span>
+        <span>Bilibili</span>
+        <span>skills.sh</span>
+      </div>
+    </header>
+
+    <section class="arena__controls">
+      <label class="arena__label">Task description</label>
+      <textarea id="taskInput" placeholder="Describe the task..."></textarea>
+      <div class="arena__options">
+        <label><input type="checkbox" value="youtube" checked /> YouTube</label>
+        <label><input type="checkbox" value="github" checked /> GitHub</label>
+        <label><input type="checkbox" value="bilibili" /> Bilibili</label>
+        <label><input type="checkbox" value="skills.sh" checked /> skills.sh</label>
+        <label><input type="checkbox" value="web" /> Web Search (MCP)</label>
+      </div>
+      <div class="arena__actions">
+        <button id="startBtn">Start</button>
+        <button id="resetBtn" class="ghost">Reset</button>
+        <span id="statusText" class="status">Idle</span>
+      </div>
+    </section>
+
+    <section class="arena__grid">
+      <div class="arena__panel">
+        <h2>Simple Agent</h2>
+        <div class="arena__columns">
+          <div>
+            <h3>Thought</h3>
+            <div id="simpleThought" class="arena__log"></div>
+          </div>
+          <div>
+            <h3>Action</h3>
+            <div id="simpleAction" class="arena__log"></div>
+          </div>
+          <div>
+            <h3>Observation</h3>
+            <div id="simpleObservation" class="arena__log"></div>
+          </div>
         </div>
       </div>
-    </nav>
-    <main class="arena">
-      <header class="arena__hero">
-        <div>
-          <p class="arena__eyebrow">Task Arena</p>
-          <h1>Run the same task through two agents and compare output.</h1>
-          <p class="arena__subtitle">
-            Choose sources, describe a task, and stream each agent's thought process in real time.
-          </p>
-        </div>
-        <div class="arena__tags">
-          <span>YouTube</span>
-          <span>GitHub</span>
-          <span>Bilibili</span>
-          <span>skills.sh</span>
-        </div>
-      </header>
-
-      <section class="arena__controls">
-        <label class="arena__label">Task description</label>
-        <textarea id="taskInput" placeholder="Describe the task..."></textarea>
-        <div class="arena__options">
-          <label><input type="checkbox" value="youtube" checked /> YouTube</label>
-          <label><input type="checkbox" value="github" checked /> GitHub</label>
-          <label><input type="checkbox" value="bilibili" /> Bilibili</label>
-          <label><input type="checkbox" value="skills.sh" checked /> skills.sh</label>
-          <label><input type="checkbox" value="web" /> Web Search (MCP)</label>
-        </div>
-        <div class="arena__actions">
-          <button id="startBtn">Start</button>
-          <button id="resetBtn" class="ghost">Reset</button>
-          <span id="statusText" class="status">Idle</span>
-        </div>
-      </section>
-
-      <section class="arena__grid">
-        <div class="arena__panel">
-          <h2>Simple Agent</h2>
-          <div class="arena__columns">
-            <div>
-              <h3>Thought</h3>
-              <div id="simpleThought" class="arena__log"></div>
-            </div>
-            <div>
-              <h3>Action</h3>
-              <div id="simpleAction" class="arena__log"></div>
-            </div>
-            <div>
-              <h3>Observation</h3>
-              <div id="simpleObservation" class="arena__log"></div>
-            </div>
+      <div class="arena__panel">
+        <h2>Augmented Agent</h2>
+        <div class="arena__columns">
+          <div>
+            <h3>Thought</h3>
+            <div id="augmentedThought" class="arena__log"></div>
+          </div>
+          <div>
+            <h3>Action</h3>
+            <div id="augmentedAction" class="arena__log"></div>
+          </div>
+          <div>
+            <h3>Observation</h3>
+            <div id="augmentedObservation" class="arena__log"></div>
           </div>
         </div>
-        <div class="arena__panel">
-          <h2>Augmented Agent</h2>
-          <div class="arena__columns">
-            <div>
-              <h3>Thought</h3>
-              <div id="augmentedThought" class="arena__log"></div>
-            </div>
-            <div>
-              <h3>Action</h3>
-              <div id="augmentedAction" class="arena__log"></div>
-            </div>
-            <div>
-              <h3>Observation</h3>
-              <div id="augmentedObservation" class="arena__log"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+      </div>
+    </section>
+  </main>
 
-    <script>
-      document.querySelectorAll(".site-nav__links a").forEach((link) => {
-        if (window.location.pathname.startsWith(link.getAttribute("href"))) {
-          link.classList.add("is-active");
-        }
-      });
+  <script>
+    document.querySelectorAll(".site-nav__links a").forEach((link) => {
+      if (window.location.pathname.startsWith(link.getAttribute("href"))) {
+        link.classList.add("is-active");
+      }
+    });
 
-      const taskInput = document.getElementById("taskInput");
-      const startBtn = document.getElementById("startBtn");
-      const resetBtn = document.getElementById("resetBtn");
-      const statusText = document.getElementById("statusText");
-      const simpleThought = document.getElementById("simpleThought");
-      const simpleAction = document.getElementById("simpleAction");
-      const simpleObservation = document.getElementById("simpleObservation");
-      const augmentedThought = document.getElementById("augmentedThought");
-      const augmentedAction = document.getElementById("augmentedAction");
-      const augmentedObservation = document.getElementById("augmentedObservation");
-      let eventSource = null;
+    const taskInput = document.getElementById("taskInput");
+    const startBtn = document.getElementById("startBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const statusText = document.getElementById("statusText");
+    const simpleThought = document.getElementById("simpleThought");
+    const simpleAction = document.getElementById("simpleAction");
+    const simpleObservation = document.getElementById("simpleObservation");
+    const augmentedThought = document.getElementById("augmentedThought");
+    const augmentedAction = document.getElementById("augmentedAction");
+    const augmentedObservation = document.getElementById("augmentedObservation");
+    let eventSource = null;
 
-      function appendLog(target, event) {
-        const entry = document.createElement("div");
-        entry.className = "arena__entry " + (event.stage || "info");
-        entry.innerHTML = `
+    function appendLog(target, event) {
+      const entry = document.createElement("div");
+      entry.className = "arena__entry " + (event.stage || "info");
+      entry.innerHTML = `
           <span class="arena__stage">${event.stage || "info"}</span>
           <span class="arena__message">${event.message}</span>
         `;
-        target.appendChild(entry);
-        target.scrollTop = target.scrollHeight;
-      }
+      target.appendChild(entry);
+      target.scrollTop = target.scrollHeight;
+    }
 
-      function clearLogs() {
-        simpleThought.innerHTML = "";
-        simpleAction.innerHTML = "";
-        simpleObservation.innerHTML = "";
-        augmentedThought.innerHTML = "";
-        augmentedAction.innerHTML = "";
-        augmentedObservation.innerHTML = "";
-      }
+    function clearLogs() {
+      simpleThought.innerHTML = "";
+      simpleAction.innerHTML = "";
+      simpleObservation.innerHTML = "";
+      augmentedThought.innerHTML = "";
+      augmentedAction.innerHTML = "";
+      augmentedObservation.innerHTML = "";
+    }
 
-      function getSources() {
-        return Array.from(document.querySelectorAll(".arena__options input:checked")).map(
-          (item) => item.value
-        );
-      }
+    function getSources() {
+      return Array.from(document.querySelectorAll(".arena__options input:checked")).map(
+        (item) => item.value
+      );
+    }
 
-      startBtn.addEventListener("click", () => {
-        const task = taskInput.value.trim();
-        if (!task) return;
-        const sources = getSources();
-        clearLogs();
-        statusText.textContent = "Running...";
-        if (eventSource) eventSource.close();
-        eventSource = new EventSource(
-          `/api/agent-arena/stream?task=${encodeURIComponent(task)}&sources=${encodeURIComponent(
-            sources.join(",")
-          )}`
-        );
+    startBtn.addEventListener("click", () => {
+      const task = taskInput.value.trim();
+      if (!task) return;
+      const sources = getSources();
+      clearLogs();
+      statusText.textContent = "Running...";
+      if (eventSource) eventSource.close();
+      eventSource = new EventSource(
+        `/api/agent-arena/stream?task=${encodeURIComponent(task)}&sources=${encodeURIComponent(
+          sources.join(",")
+        )}`
+      );
 
-        eventSource.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          const targetMap = {
-            simple: {
-              thought: simpleThought,
-              action: simpleAction,
-              observation: simpleObservation,
-            },
-            augmented: {
-              thought: augmentedThought,
-              action: augmentedAction,
-              observation: augmentedObservation,
-            },
-          };
-          const agentTargets = targetMap[data.agent] || targetMap.simple;
-          const bucket = agentTargets[data.kind] || agentTargets.observation;
-          appendLog(bucket, data);
-          if (data.terminal && data.agent === "augmented") {
-            statusText.textContent = "Completed";
-            eventSource.close();
-          }
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        const targetMap = {
+          simple: {
+            plan: simpleThought,
+            thought: simpleThought,
+            action: simpleAction,
+            observation: simpleObservation,
+            done: simpleObservation,
+          },
+          augmented: {
+            plan: augmentedThought,
+            thought: augmentedThought,
+            action: augmentedAction,
+            observation: augmentedObservation,
+            done: augmentedObservation,
+            error: augmentedObservation,
+          },
         };
+        const agentTargets = targetMap[data.agent] || targetMap.simple;
+        // Use data.stage (backend field) instead of data.kind
+        const bucket = agentTargets[data.stage] || agentTargets.observation;
+        appendLog(bucket, data);
+        if (data.terminal && data.agent === "augmented") {
+          statusText.textContent = "Completed";
+          eventSource.close();
+        }
+      };
 
-        eventSource.onerror = () => {
-          if (statusText.textContent !== "Completed") {
-            statusText.textContent = "Failed";
-          }
-          if (eventSource) eventSource.close();
-        };
-      });
-
-      resetBtn.addEventListener("click", () => {
-        taskInput.value = "";
-        clearLogs();
-        statusText.textContent = "Idle";
+      eventSource.onerror = () => {
+        if (statusText.textContent !== "Completed") {
+          statusText.textContent = "Failed";
+        }
         if (eventSource) eventSource.close();
-      });
-    </script>
-  </body>
+      };
+    });
+
+    resetBtn.addEventListener("click", () => {
+      taskInput.value = "";
+      clearLogs();
+      statusText.textContent = "Idle";
+      if (eventSource) eventSource.close();
+    });
+  </script>
+</body>
+
 </html>
