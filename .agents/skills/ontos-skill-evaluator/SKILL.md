@@ -1,15 +1,32 @@
 ---
-name: skill-evaluator
-description: Meta-skill for evaluating the quality of other Claude Skills. Use when you need to assess a SKILL.md file's quality, validate its structure, detect common issues (duplicate frontmatter, missing triggers, vague instructions), or generate an evaluation report with actionable recommendations. Triggers: "evaluate this skill", "check skill quality", "assess skill effectiveness", "validate SKILL.md".
+name: ontos-skill-evaluator
+description: "Meta-skill by Ontos AI for evaluating Claude Skills quality. Use when you need to assess a SKILL.md file quality, validate its structure, detect common issues, or generate an evaluation report with actionable recommendations."
+license: MIT
+metadata:
+  author: ontos-ai
+  version: "1.0.0"
 ---
 
-# Skill Evaluator
+# Ontos Skill Evaluator
 
-A meta-skill that evaluates other Claude Skills through systematic quality assessment.
+A meta-skill by [Ontos AI](https://github.com/Ontos-AI) that evaluates other Claude Skills through systematic quality assessment.
+
+## Installation
+
+```bash
+npx skills add ontos-ai/skills-evaluator
+```
 
 ## Quick Start
 
-To evaluate a skill:
+### Node.js (Recommended for skills.sh users)
+
+```bash
+node scripts/quick_eval.js <path-to-skill>
+node scripts/quick_eval.js <path-to-skill> --format html
+```
+
+### Python (For local development)
 
 ```bash
 python scripts/quick_eval.py <path-to-skill>
@@ -17,7 +34,7 @@ python scripts/quick_eval.py <path-to-skill>
 
 Example:
 ```bash
-python scripts/quick_eval.py ../output/skills/ai-agent-trend-analysis
+node scripts/quick_eval.js ../output/skills/ai-agent-trend-analysis --format html
 ```
 
 ## Evaluation Dimensions
