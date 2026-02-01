@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  anything-skills:
+    build:
+      context: .
+      dockerfile: Dockerfile.full
+    container_name: anything-skills
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # LLM 配置
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
+      # Whisper 配置
+      - WHISPER_MODEL=${WHISPER_MODEL:-base}
+      - WHISPER_LANGUAGE=${WHISPER_LANGUAGE:-zh}
+      - USE_LOCAL_TRANSCRIPTION=${USE_LOCAL_TRANSCRIPTION:-1}
+      # 可选 API
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - YOUTUBE2TEXT_API_KEY=${YOUTUBE2TEXT_API_KEY:-}
+      - BOCHA_API_KEY=${BOCHA_API_KEY:-}
+      - BOCHA_API_ENDPOINT=${BOCHA_API_ENDPOINT:-}
+      - BAILIAN_API_KEY=${BAILIAN_API_KEY:-}
+      - BAILIAN_MCP_ENDPOINT=${BAILIAN_MCP_ENDPOINT:-}
+      - BAILIAN_MCP_SERVICE_ID=${BAILIAN_MCP_SERVICE_ID:-}
+    volumes:
+      # 持久化存储
+      - ./output:/app/output
+      - ./downloads:/app/downloads
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # 可选：Nginx 反向代理（如果需要域名和 HTTPS）
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: nginx-proxy
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./certs:/etc/nginx/certs:ro
+  #   depends_on:
+  #     - anything-skills

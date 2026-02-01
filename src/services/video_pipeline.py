@@ -8,7 +8,12 @@ import os
 import subprocess
 import uuid
 
-import whisper
+try:
+    import whisper
+    WHISPER_AVAILABLE = True
+except ImportError:
+    whisper = None
+    WHISPER_AVAILABLE = False
 
 from src.core.config import config
 from src.services.llm import extract_skills_from_transcript
@@ -46,6 +51,8 @@ def _download_audio(video_url: str) -> Path:
 
 
 def _transcribe_audio(audio_path: Path) -> str:
+    if not WHISPER_AVAILABLE:
+        raise RuntimeError("Whisper is not installed. Video transcription is not available in this deployment.")
     model_name = os.getenv("WHISPER_MODEL") or "base"
     model = whisper.load_model(model_name)
     result = model.transcribe(str(audio_path))

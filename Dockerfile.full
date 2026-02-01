@@ -1,0 +1,38 @@
+# 精简版 Dockerfile - 直接列出依赖
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# 使用阿里云镜像源
+RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+
+# 安装 FFmpeg
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装核心依赖
+RUN pip install --no-cache-dir \
+    fastapi==0.109.0 \
+    uvicorn[standard]==0.27.0 \
+    openai==1.12.0 \
+    anthropic==0.18.1 \
+    yt-dlp==2024.1.1 \
+    jinja2==3.1.3 \
+    python-multipart==0.0.9 \
+    aiohttp==3.9.3 \
+    httpx==0.27.0 \
+    pydantic==2.6.0 \
+    python-dotenv==1.0.1
+
+# 复制应用代码
+COPY src/ ./src/
+COPY .env.example .
+
+# 创建必要目录
+RUN mkdir -p output/skills output/content downloads data \
+    && chmod -R 777 output downloads data
+
+EXPOSE 8000
+
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

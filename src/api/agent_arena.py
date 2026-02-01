@@ -3,13 +3,15 @@ from __future__ import annotations
 
 import asyncio
 import json
+from pathlib import Path
 from typing import AsyncIterator, Dict, Any, List, Optional
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse, Response
 
 from src.services.agent_middleware import apply_middlewares, BuiltinMiddleware, TerminalMiddleware
 from src.application.agent_service import run_augmented_stream
+from src.core.config import config
 
 
 router = APIRouter()
@@ -75,3 +77,42 @@ async def agent_arena_stream(task: str, sources: Optional[str] = None):
             yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
+@router.get("/api/agent-arena/skills")
+async def list_generated_skills():
+    """List all generated skills available for download."""
+    skills_dir = config.SKILLS_DIR
+    skills = []
+    if skills_dir.exists():
+        for entry in skills_dir.iterdir():
+            if entry.is_dir():
+                skill_file = entry / "SKILL.md"
+                if skill_file.exists():
+                    skills.append({
+                        "slug": entry.name,
+                        "name": entry.name.replace("-", " ").title(),
+                        "path": str(skill_file),
+                    })
+    return {"skills": skills}
+
+
+@router.get("/api/agent-arena/download/{skill_slug}")
+async def download_skill(skill_slug: str):
+    """Download a generated SKILL.md file."""
+    skill_path = config.SKILLS_DIR / skill_slug / "SKILL.md"
+    if not skill_path.exists():
+        raise HTTPException(status_code=404, detail=f"Skill '{skill_slug}' not found")
+    
+    content = skill_path.read_text(encoding="utf-8")
+    filename = f"{skill_slug}-SKILL.md"
+    
+    return Response(
+        content=content,
+        media_type="text/markdown",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}",
+            "Content-Type": "text/markdown; charset=utf-8",
+        }
+    )
+

@@ -49,6 +49,7 @@
       <div class="arena__actions">
         <button id="startBtn">Start</button>
         <button id="resetBtn" class="ghost">Reset</button>
+        <button id="downloadBtn" class="ghost" style="display:none;">📥 Download SKILL.md</button>
         <span id="statusText" class="status">Idle</span>
       </div>
     </section>
@@ -101,6 +102,7 @@
     const taskInput = document.getElementById("taskInput");
     const startBtn = document.getElementById("startBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
     const statusText = document.getElementById("statusText");
     const simpleThought = document.getElementById("simpleThought");
     const simpleAction = document.getElementById("simpleAction");
@@ -109,6 +111,7 @@
     const augmentedAction = document.getElementById("augmentedAction");
     const augmentedObservation = document.getElementById("augmentedObservation");
     let eventSource = null;
+    let generatedSkillSlug = null;
 
     function appendLog(target, event) {
       const entry = document.createElement("div");
@@ -128,12 +131,21 @@
       augmentedThought.innerHTML = "";
       augmentedAction.innerHTML = "";
       augmentedObservation.innerHTML = "";
+      generatedSkillSlug = null;
+      downloadBtn.style.display = "none";
     }
 
     function getSources() {
       return Array.from(document.querySelectorAll(".arena__options input:checked")).map(
         (item) => item.value
       );
+    }
+
+    function extractSkillSlug(message) {
+      // Look for "Skill saved: /path/to/output/skills/<slug>/SKILL.md"
+      const match = message.match(/Skill saved:.*\/skills\/([^\/]+)\/SKILL\.md/);
+      if (match) return match[1];
+      return null;
     }
 
     startBtn.addEventListener("click", () => {
@@ -172,9 +184,23 @@
         // Use data.stage (backend field) instead of data.kind
         const bucket = agentTargets[data.stage] || agentTargets.observation;
         appendLog(bucket, data);
+
+        // Check if a skill was saved
+        if (data.message) {
+          const slug = extractSkillSlug(data.message);
+          if (slug) {
+            generatedSkillSlug = slug;
+          }
+        }
+
         if (data.terminal && data.agent === "augmented") {
           statusText.textContent = "Completed";
           eventSource.close();
+
+          // Show download button if skill was generated
+          if (generatedSkillSlug) {
+            downloadBtn.style.display = "inline-block";
+          }
         }
       };
 
@@ -191,6 +217,12 @@
       clearLogs();
       statusText.textContent = "Idle";
       if (eventSource) eventSource.close();
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      if (generatedSkillSlug) {
+        window.location.href = `/api/agent-arena/download/${encodeURIComponent(generatedSkillSlug)}`;
+      }
     });
   </script>
 </body>
